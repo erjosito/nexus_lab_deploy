@@ -1,0 +1,16 @@
+{
+    "path": "C:\\Users\\MyUser\\Desktop", 
+    "lab_name": "MyLab", 
+    "switches": [
+        {            
+			"target": "198.18.134.140", 
+            "user": "admin", 
+            "pw": "pw12345"
+        }, 
+		{            
+			"target": "198.18.134.141", 
+            "user": "admin", 
+            "pw": "pw12345"
+        }
+    ]
+}
