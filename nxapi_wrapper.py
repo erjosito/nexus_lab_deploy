@@ -22,26 +22,30 @@ class nxapi_wrapper(object):
     def backup_running_config(self, file):
         self.device.backup_running_config(file)
 
-    def set_running_config(self, file):
-        self.device.config("feature scp-server")
-        self.device.config("feature sftp-server")
-        self.device.file_copy(src=file, dest=None, file_system='bootflash:')
-        self.device.config("copy bootflash:%s startup-config" % os.path.basename(file))
-        self.device.config("terminal dont-ask")
-
-        try:
-            self.device.config("reload")
-        except Exception:
-            pass
-
-        while(not self._reachable()):
-            print("Device %s still reloading [%s]" % (self.host, datetime.now().strftime("%X")))
-            sleep(20)
-        print("Device %s reachable again" % self.host)
-        print("Start cleanup bootflash")
-        self.device.config("terminal dont-ask")
-        self.device.config("delete bootflash:%s" % os.path.basename(file))
-        print("Finished cleanup bootflash")
+    def set_running_config(self, file, reload=True, wait=True):
+    	# The function can be called in multiple modes:
+    	# - reload=True, wait=True: it will reload the switch, wait until it is back, and clenaup
+    	# - reload=True, wait=False: it will reload the switch, without waiting until it is back (no clenaup either)
+		# - reload=False, wait=True: it will wait until the switch is reachable, and will do the cleanup
+		if reload:
+			self.device.config("feature scp-server")
+			self.device.config("feature sftp-server")
+			self.device.file_copy(src=file, dest=None, file_system='bootflash:')
+			self.device.config("copy bootflash:%s startup-config" % os.path.basename(file))
+			self.device.config("terminal dont-ask")
+			try:
+				self.device.config("reload")
+			except Exception:
+				pass		
+		if wait:
+			while(not self._reachable()):
+				print("Device %s still reloading [%s]" % (self.host, datetime.now().strftime("%X")))
+				sleep(20)
+			print("Device %s reachable again" % self.host)
+			print("Start cleanup bootflash")
+			self.device.config("terminal dont-ask")
+			self.device.config("delete bootflash:%s" % os.path.basename(file))
+			print("Finished cleanup bootflash")
 
     def _reachable(self):
         try:
